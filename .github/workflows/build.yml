@@ -1,0 +1,38 @@
+name: build
+on: [push, workflow_dispatch]
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the uploaded files
+        shell: bash
+        run: |
+          echo "Files in the repo:"; ls -R . | grep -v "^\./\.git" | head -60
+          missing=0
+          for f in CMakeLists.txt Source/PluginProcessor.cpp Source/PluginProcessor.h Source/PluginEditor.cpp Source/PluginEditor.h Source/StyleEngine.h Source/Crossover.h Source/StyleTable.h Resources/Inter-Light.ttf Resources/Inter-SemiBold.ttf Resources/Inter-Bold.ttf; do
+            if [ ! -f "$f" ]; then echo "::error::MISSING FILE: $f"; missing=1; fi
+          done
+          if [ -d NeptuneMB ] && [ ! -f CMakeLists.txt ]; then
+            echo "::error::Your files are inside a NeptuneMB sub-folder. Upload the CONTENTS of the folder, not the folder itself."
+          fi
+          if [ $missing = 1 ]; then exit 1; fi
+          echo "All required files found."
+
+      - name: Get JUCE
+        shell: bash
+        run: |
+          rm -rf JUCE
+          git clone --depth 1 --branch 8.0.4 https://github.com/juce-framework/JUCE.git JUCE
+
+      - name: Configure
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --target NeptuneMB_VST3
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: NeptuneMB-Windows-VST3
+          path: build/NeptuneMB_artefacts/Release/VST3/
