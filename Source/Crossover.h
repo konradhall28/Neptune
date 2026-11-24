@@ -16,9 +16,9 @@ struct OnePole
     double b0 = 1, b1 = 0, a1 = 0, z = 0;
     void reset() { z = 0; }
     inline double process (double x) { const double y = b0 * x + z; z = b1 * x - a1 * y; return y; }
-    void lowpass  (double fs, double f) { const double k = std::tan (M_PI * f / fs); b0 = b1 = k / (1 + k); a1 = (k - 1) / (1 + k); }
-    void highpass (double fs, double f) { const double k = std::tan (M_PI * f / fs); b0 = 1 / (1 + k); b1 = -b0; a1 = (k - 1) / (1 + k); }
-    void allpass  (double fs, double f) { const double k = std::tan (M_PI * f / fs); const double c = (k - 1) / (k + 1); b0 = c; b1 = 1; a1 = c; }
+    void lowpass  (double fs, double f) { const double k = std::tan (nep::kPi * f / fs); b0 = b1 = k / (1 + k); a1 = (k - 1) / (1 + k); }
+    void highpass (double fs, double f) { const double k = std::tan (nep::kPi * f / fs); b0 = 1 / (1 + k); b1 = -b0; a1 = (k - 1) / (1 + k); }
+    void allpass  (double fs, double f) { const double k = std::tan (nep::kPi * f / fs); const double c = (k - 1) / (k + 1); b0 = c; b1 = 1; a1 = c; }
 };
 
 // One crossover point for one channel
@@ -47,7 +47,7 @@ struct CrossoverPoint
     }
     static void setAllpass (Biquad& b, double fs, double f, double q)
     {
-        const double w = 2 * M_PI * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
+        const double w = 2 * nep::kPi * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
         b.set (1 - al, -2 * c, 1 + al, 1 + al, -2 * c, 1 - al);
     }
     void reset() { lp1.reset(); hp1.reset(); lp1b.reset(); hp1b.reset(); ap1.reset(); for (auto& b : lp) b.reset(); for (auto& b : hp) b.reset(); for (auto& b : ap) b.reset(); }
@@ -168,7 +168,7 @@ inline void designLinearPhaseLP (std::vector<float>& h, int len, double fs, doub
     double sum = 0;
     for (int i = -half; i <= half; ++i)
     {
-        const double w = 0.5 * (1 + std::cos (M_PI * i / (half + 1)));   // Hann window
+        const double w = 0.5 * (1 + std::cos (nep::kPi * i / (half + 1)));   // Hann window
         const float v = time[(size_t) ((i + nfft) % nfft)].real();
         h[(size_t) (i + half)] = (float) (v * w);
         sum += v * w;

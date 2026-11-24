@@ -312,13 +312,13 @@ void NeptuneProcessor::computeModulation (int n, juce::AudioPlayHead::PositionIn
         double v = 0;
         switch ((int) param (pre + "_shape"))
         {
-            case 0: v = std::sin (2 * M_PI * ph); break;
+            case 0: v = std::sin (2 * nep::kPi * ph); break;
             case 1: v = ph < 0.25 ? ph * 4 : ph < 0.75 ? 2 - ph * 4 : ph * 4 - 4; break;
             case 2: v = ph * 2 - 1; break;
             case 3: v = 1 - ph * 2; break;
             case 4: v = ph < 0.5 ? 1 : -1; break;
             case 5: v = lfoHeld[l]; break;
-            default: { const double s = 0.5 - 0.5 * std::cos (M_PI * ph); v = lfoPrev[l] + (lfoNext[l] - lfoPrev[l]) * s; } break;
+            default: { const double s = 0.5 - 0.5 * std::cos (nep::kPi * ph); v = lfoPrev[l] + (lfoNext[l] - lfoPrev[l]) * s; } break;
         }
         sv[1 + l] = v;
     }
@@ -506,8 +506,8 @@ void NeptuneProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
             const double fbG = fbAmt * bd.fbScale;
             const double osFs = fs * factor;
             const int D = juce::jlimit (1, (int) bd.fbBuf[0].size() - 2, (int) std::round (osFs / mv[3]));
-            const double fbLpC = 1.0 - std::exp (-2 * M_PI * juce::jmin (20000.0, mv[3] * 6.0) / osFs);
-            const double fbHpC = 1.0 - std::exp (-2 * M_PI * 30.0 / osFs);
+            const double fbLpC = 1.0 - std::exp (-2 * nep::kPi * juce::jmin (20000.0, mv[3] * 6.0) / osFs);
+            const double fbHpC = 1.0 - std::exp (-2 * nep::kPi * 30.0 / osFs);
 
             // band dry copy (aligned with oversampling latency)
             for (int c = 0; c < 2; ++c)

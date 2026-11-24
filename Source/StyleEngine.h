@@ -10,6 +10,8 @@
 
 namespace nep
 {
+constexpr double kPi = 3.14159265358979323846;   // nep::kPi is not defined by MSVC
+
 enum StyleKind : int { kGeneric = 0, kFoldback = 1, kRectify = 2, kDestroy = 3, kBreakdown = 4, kSmudge = 5, kTwoStage = 6 };
 
 // One style = a small fixed signal chain whose numbers come from the fit.
@@ -49,23 +51,23 @@ struct Biquad
     void lowpass (double fs, double f, double q = 0.70710678)
     {
         f = std::min (f, fs * 0.45);
-        const double w = 2 * M_PI * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
+        const double w = 2 * nep::kPi * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
         set ((1 - c) / 2, 1 - c, (1 - c) / 2, 1 + al, -2 * c, 1 - al);
     }
     void highpass (double fs, double f, double q = 0.70710678)
     {
-        const double w = 2 * M_PI * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
+        const double w = 2 * nep::kPi * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
         set ((1 + c) / 2, -(1 + c), (1 + c) / 2, 1 + al, -2 * c, 1 - al);
     }
     void peak (double fs, double f, double db, double q)
     {
         f = std::min (f, fs * 0.45);
-        const double A = std::pow (10.0, db / 40), w = 2 * M_PI * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
+        const double A = std::pow (10.0, db / 40), w = 2 * nep::kPi * f / fs, c = std::cos (w), al = std::sin (w) / (2 * q);
         set (1 + al * A, -2 * c, 1 - al * A, 1 + al / A, -2 * c, 1 - al / A);
     }
     void lowShelf (double fs, double f, double db, double q = 0.70710678)
     {
-        const double A = std::pow (10.0, db / 40), w = 2 * M_PI * f / fs, c = std::cos (w), s = std::sin (w);
+        const double A = std::pow (10.0, db / 40), w = 2 * nep::kPi * f / fs, c = std::cos (w), s = std::sin (w);
         const double al = s / (2 * q), r = 2 * std::sqrt (A) * al;
         set (A * ((A + 1) - (A - 1) * c + r), 2 * A * ((A - 1) - (A + 1) * c), A * ((A + 1) - (A - 1) * c - r),
              (A + 1) + (A - 1) * c + r, -2 * ((A - 1) + (A + 1) * c), (A + 1) + (A - 1) * c - r);
@@ -73,7 +75,7 @@ struct Biquad
     void highShelf (double fs, double f, double db, double q = 0.70710678)
     {
         f = std::min (f, fs * 0.45);
-        const double A = std::pow (10.0, db / 40), w = 2 * M_PI * f / fs, c = std::cos (w), s = std::sin (w);
+        const double A = std::pow (10.0, db / 40), w = 2 * nep::kPi * f / fs, c = std::cos (w), s = std::sin (w);
         const double al = s / (2 * q), r = 2 * std::sqrt (A) * al;
         set (A * ((A + 1) + (A - 1) * c + r), -2 * A * ((A - 1) + (A + 1) * c), A * ((A + 1) + (A - 1) * c - r),
              (A + 1) - (A - 1) * c + r, 2 * ((A - 1) - (A + 1) * c), (A + 1) - (A - 1) * c - r);

@@ -274,17 +274,18 @@ void Knob::mouseDoubleClick (const juce::MouseEvent&)
     entry->setFont (ui::font (12.0f)); entry->setJustification (juce::Justification::centred);
     entry->setBounds (getLocalBounds().removeFromBottom (18).withSizeKeepingCentre (juce::jmin (getWidth(), 70), 18));
     entry->setText (param->getCurrentValueAsText(), false); entry->selectAll(); entry->grabKeyboardFocus();
-    auto done = [this]
+    juce::Component::SafePointer<Knob> safe (this);
+    auto done = [this, safe]
     {
         auto txt = entry->getText().trim().toLowerCase();
         float v = txt.getFloatValue();
         if (txt.endsWith ("k") || txt.contains ("khz")) v *= 1000.0f;
         if (txt.endsWith ("%") && param->getNormalisableRange().end > 101) v = param->convertFrom0to1 (v * 0.01f);
         if (txt.isNotEmpty()) { param->beginChangeGesture(); param->setValueNotifyingHost (param->convertTo0to1 (v)); param->endChangeGesture(); }
-        juce::MessageManager::callAsync ([sp = juce::Component::SafePointer<Knob> (this)] { if (sp) sp->entry.reset(); });
+        juce::MessageManager::callAsync ([safe] { if (safe != nullptr) safe->entry.reset(); });
     };
     entry->onReturnKey = done; entry->onFocusLost = done;
-    entry->onEscapeKey = [this] { juce::MessageManager::callAsync ([sp = juce::Component::SafePointer<Knob> (this)] { if (sp) sp->entry.reset(); }); };
+    entry->onEscapeKey = [safe] { juce::MessageManager::callAsync ([safe] { if (safe != nullptr) safe->entry.reset(); }); };
 }
 void Knob::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w)
 {
